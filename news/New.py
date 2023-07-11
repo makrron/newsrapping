@@ -21,7 +21,10 @@ class New:
         """
         self.title = title
         self.url = url
-        self.image_url = image_url
+        if image_url is None:
+            self.image_url = ""
+        else:
+            self.image_url = image_url
         if summary is None:
             self.summary = ""
         else:
