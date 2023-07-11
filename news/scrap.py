@@ -277,6 +277,7 @@ def get_newsbtc_news(tag):
         # Print news
         print(n.__str__())
         print("------------------------------------")
+        # TODO: Save news in database
 
 
 if __name__ == '__main__':
