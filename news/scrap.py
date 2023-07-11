@@ -2,6 +2,10 @@
 this file is used to scrap the news from websites,
 there are a function for each website
 - CoinTelegraph
+- CoinPedia
+- AmbCrypto
+- Cryptopolitan
+- The News Crypto
 """
 
 import requests
@@ -197,8 +201,56 @@ def get_cryptopolitan_news(url):
             # TODO: Save news in database
 
 
+def get_thenewscrypto_news(tag):
+    url = f"https://thenewscrypto.com/{tag}"
+    response = requests.get(url, headers={'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; rv:110.0) '
+                                                        'Gecko/20100101 Firefox/110.0',
+                                          'Accept': 'text/html,application/xhtml+xml,application/'
+                                                    'xml;q=0.9,image/avif,image/webp,*/*;q=0.8'})
+    soup = BeautifulSoup(response.text, "html.parser")
+    # news are in div class "card mb-3 shadow-sm text-box"
+    news = soup.find_all("div", class_="card mb-3 shadow-sm text-box")
+    for new in news:
+        # get image on img class in a class "h-100 w-100 d-inline-block" src
+        image_url = new.find("img")["data-lazy-src"]
+        # get url on a class "h-100 w-100 d-inline-block" href
+        url = new.find("a", class_="h-100 w-100 d-inline-block")["href"]
+        # get title on a class "text-decoration-none text-dark" text
+        title = new.find("a", class_="text-decoration-none text-dark").text
+        # get summary on p into div class "d-flex flex-column justify-content-around h-100"
+        summary = new.find("div", class_="d-flex flex-column justify-content-around h-100").find("p").text
+        # get category based on tag
+        category = tag
+        category = re.sub(r"-", " ", category)
+        category = re.sub(r"/", " ", category)
+        category = re.sub(r"^\s", "", category)
+        category = re.sub(r"^\n", "", category)
+        category = category.title()
+        category = re.sub(r"News", "", category)
+        category = category.title()
+
+        # create news object
+        n = New(title, url, image_url, summary, category, date=None)
+        # Print news
+        print(n.__str__())
+        print("------------------------------------")
+        # TODO: Save news in database
+
 if __name__ == '__main__':
+
     """
+    get_thenewscrypto_news("altcoin-news")
+    get_thenewscrypto_news("bitcoin-news")
+    get_thenewscrypto_news("news/ethereum-news/")
+    get_thenewscrypto_news("blockchain-news/")
+    get_thenewscrypto_news("news/nft-news/")
+    get_thenewscrypto_news("exchange-news/")
+    get_thenewscrypto_news("news/metaverse/")
+    get_thenewscrypto_news("market-news")
+    get_thenewscrypto_news("markets/price-analysis/")
+    get_thenewscrypto_news("markets/price-prediction/")
+    get_thenewscrypto_news("learn/")
+    
     get_cryptopolitan_news("https://www.cryptopolitan.com/news/")
     get_cryptopolitan_news("https://www.cryptopolitan.com/price-prediction/")
     get_cryptopolitan_news("https://www.cryptopolitan.com/guides/")
@@ -206,8 +258,11 @@ if __name__ == '__main__':
     get_cryptopolitan_news("https://www.cryptopolitan.com/news/research/")
     get_cryptopolitan_news("https://www.cryptopolitan.com/news/scam/")
     get_cryptopolitan_news("https://www.cryptopolitan.com/technology/")
+    
     get_ambcrypto_news()
+    
     get_coinpedia_news()
+    
     get_coin_telegraph_news("bitcoin")
     get_coin_telegraph_news("ethereum")
     get_coin_telegraph_news("altcoin")
