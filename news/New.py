@@ -1,6 +1,7 @@
 """
 New.py is a module that contains the class New.
 """
+import hashlib
 from datetime import datetime
 
 
@@ -35,24 +36,24 @@ class New:
             self.date = datetime.today().strftime("%B %d, %Y")
         else:
             self.date = date
-        self.id = self.__hash__()  # id is the hash of the object
+        self.id = self.__hash__()
+
+    def __eq__(self, other):
+        """
+        Returns True if the objects are equal, False if not.
+        :param other: object to compare
+        :return: boolean
+        """
+        if not isinstance(other, New):
+            return False
+        return self.url == other.url
 
     def __hash__(self):
         """
         Returns the hash of the object.
         :return: hash of the object
         """
-        return hash(self.title + self.url + self.image_url + self.summary + self.category)
-
-    def __eq__(self, other):
-        """
-        Returns True if the objects are equal, False otherwise.
-        :param other: object to compare
-        :return: True if the objects are equal, False otherwise
-        """
-        if isinstance(other, New):
-            return (self.title == other.title and
-                    self.url == other.url)
+        return int(hashlib.sha256(self.url.encode('utf-8')).hexdigest(), 16) % 10 ** 8
 
     def __str__(self):
         """
@@ -66,3 +67,18 @@ class New:
                 "\nImage url: " + self.image_url +
                 "\nDate: " + self.date)
 
+    def to_json(self):
+        """
+        Returns a json with the attributes of the object.
+        :return:
+        """
+
+        return {
+            "ID": self.id,
+            "Title": self.title,
+            "Summary": self.summary,
+            "Category": self.category,
+            "Url": self.url,
+            "Image_url": self.image_url,
+            "Date": self.date
+        }
