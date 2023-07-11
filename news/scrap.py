@@ -280,7 +280,66 @@ def get_newsbtc_news(tag):
         # TODO: Save news in database
 
 
+def get_thecryptobasic_news(tag):
+    url = f"https://thecryptobasic.com/{tag}"
+    response = requests.get(url, headers={'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; rv:110.0) '
+                                                        'Gecko/20100101 Firefox/110.0',
+                                          'Accept': 'text/html,application/xhtml+xml,application/'
+                                                    'xml;q=0.9,image/avif,image/webp,*/*;q=0.8'})
+    soup = BeautifulSoup(response.text, "html.parser")
+    # News are in div class "tdb_module_loop td_module_wrap td-animation-stack td-cpt-post"
+    news = soup.find_all("div", class_="tdb_module_loop td_module_wrap td-animation-stack td-cpt-post")
+    for new in news:
+        # Get image on span class "entry-thumb td-thumb-css rocket-lazyload entered lazyloaded"
+        image_url = new.find("span", class_="entry-thumb td-thumb-css rocket-lazyload")["data-bg"]
+        # get url on a class "td-image-wrap" href
+        url = new.find("a", class_="td-image-wrap")["href"]
+        # get title on h3 class "entry-title td-module-title"
+        title = new.find("h3", class_="entry-title td-module-title").find("a").text
+        # get summary on div class "td-excerpt"
+        summary = new.find("div", class_="td-excerpt").text
+        summary = re.sub(r"^\n", "", summary)
+
+        # get date on time class "entry-date updated td-module-date" text
+        date = new.find("time", class_="entry-date updated td-module-date").text
+        # get category from tag
+        category = tag
+        # expresion regular para eliminar caracteres especiales y sustituirlos por un espacio, poner la primera letra en mayusculas y eliminar espacios al principio
+        category = re.sub(r"/", " ", category)
+        category = re.sub(r"-", " ", category)
+        category = re.sub(r"^\s", "", category)
+        category = re.sub(r"^\n", "", category)
+        category = category.title()
+        # expresion regular para eliminar las palabras "News" y "Tag" de la categoria
+        category = re.sub(r"News", "", category)
+        category = re.sub(r"Tag", "", category)
+        category = re.sub(r"Category", "", category)
+        # eliminar los espacios del principio y final de la categoria
+        category = re.sub(r"^\s", "", category)
+        category = category.title()
+
+        # create news object
+        n = New(title, url, image_url, summary, category, date)
+        # Print news
+        print(n.__str__())
+        print("------------------------------------")
+        # TODO: Save news in database
+
+
 if __name__ == '__main__':
+    get_thecryptobasic_news("category/latest-crypto-news/")
+    get_thecryptobasic_news("tag/bitcoin/")
+    get_thecryptobasic_news("tag/ethereum/")
+    get_thecryptobasic_news("tag/ripple/")
+    get_thecryptobasic_news("tag/cardano/")
+    get_thecryptobasic_news("tag/shiba-inu/")
+    get_thecryptobasic_news("tag/altcoins/")
+    get_thecryptobasic_news("tag/crypto-exchanges/")
+    get_thecryptobasic_news("category/cryptocurrency-trading-bot/")
+    get_thecryptobasic_news("category/cryptocurrency-guides/")
+    get_thecryptobasic_news("category/cryptocurrency-exchanges/")
+
+
     get_newsbtc_news("news/")
     get_newsbtc_news("news/bitcoin/")
     get_newsbtc_news("news/ethereum/")
@@ -299,7 +358,7 @@ if __name__ == '__main__':
     get_newsbtc_news("analysis/eos-price/")
     get_newsbtc_news("news/yearnfinance/")
 
-    """
+    
     get_thenewscrypto_news("altcoin-news")
     get_thenewscrypto_news("bitcoin-news")
     get_thenewscrypto_news("news/ethereum-news/")
@@ -333,4 +392,4 @@ if __name__ == '__main__':
     get_coin_telegraph_news("nft")
     get_coin_telegraph_news("defi")
     get_coin_telegraph_news("adoption")
-    """
+
