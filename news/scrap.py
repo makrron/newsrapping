@@ -12,7 +12,7 @@ from news.New import New
 
 
 def get_coin_telegraph_news():
-    url = "https://cointelegraph.com/tags/bitcoin"
+    url = "https://cointelegraph.com/tags/nft"
     response = requests.get(url, headers={'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; rv:110.0) Gecko/20100101 '
                                                         'Firefox/110.0',
                                           'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,'
@@ -39,7 +39,19 @@ def get_coin_telegraph_news():
             category = new.find("span", class_="post-card-inline__badge post-card-inline__badge_default").text
             category = re.sub(r"^\s", "", category)
         except AttributeError:
-            category = "News"
+            try:
+                category = new.find("span", class_="post-card-inline__badge post-card-inline__badge_info").text
+                category = re.sub(r"^\s", "", category)
+            except AttributeError:
+                try:
+                    category = new.find("span", class_="post-card-inline__badge post-card-inline__badge_success").text
+                    category = re.sub(r"^\s", "", category)
+                except AttributeError:
+                    try:
+                        category = new.find("span", class_="post-card-inline__badge post-card-inline__badge_").text
+                        category = re.sub(r"^\s", "", category)
+                    except AttributeError:
+                        category = "News"
 
         # Create news object
         n = New(title, url, image_url, summary, category)
