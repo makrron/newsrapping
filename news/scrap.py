@@ -130,7 +130,10 @@ def get_ambcrypto_news():
     # News are on ul class "home-posts infinite-content"
     news = soup.find_all("ul", class_="home-posts infinite-content")
     # divide news in li
-    news = news[0].find_all("li")
+    try:
+        news = news[0].find_all("li")
+    except IndexError:
+        news = []
     for new in news:
         # get image url on img data-lazy-src
         image_url = new.find("img")["data-lazy-src"]
@@ -236,7 +239,64 @@ def get_thenewscrypto_news(tag):
         print("------------------------------------")
         # TODO: Save news in database
 
+
+def get_newsbtc_news(tag):
+    url = f"https://www.newsbtc.com/{tag}"
+    response = requests.get(url, headers={'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; rv:110.0) '
+                                                        'Gecko/20100101 Firefox/110.0',
+                                          'Accept': 'text/html,application/xhtml+xml,application/'
+                                                    'xml;q=0.9,image/avif,image/webp,*/*;q=0.8'})
+    soup = BeautifulSoup(response.text, "html.parser")
+    # News are in div class "jeg_posts jeg_load_more_flag"
+    news = soup.find_all("div", class_="jeg_posts jeg_load_more_flag")
+    # divide news in article
+    try:
+        news = news[0].find_all("article")
+    except IndexError:
+        news = []
+    for new in news:
+        # get image on img into div class "thumbnail-container animate-lazy  size-715" src
+        try:
+            image_url = new.find("img")["data-src"]
+        except TypeError:
+            image_url = None
+        # get url on a href in h3 class "jeg_post_title"
+        url = new.find("h3", class_="jeg_post_title").find("a")["href"]
+        # get title on a href in h3 class "jeg_post_title"
+        title = new.find("h3", class_="jeg_post_title").find("a").text
+        # get summary on p class "jeg_post_excerpt"
+        summary = new.find("div", class_="jeg_post_excerpt").find("p").text
+        # get category from tag
+        category = tag
+        category = re.sub(r"/", " ", category)
+        category = re.sub(r"^\s", "", category)
+        category = re.sub(r"^\n", "", category)
+        category = category.title()
+        # create news object
+        n = New(title, url, image_url, summary, category, date=None)
+        # Print news
+        print(n.__str__())
+        print("------------------------------------")
+
+
 if __name__ == '__main__':
+    get_newsbtc_news("news/")
+    get_newsbtc_news("news/bitcoin/")
+    get_newsbtc_news("news/ethereum/")
+    get_newsbtc_news("news/cardano/")
+    get_newsbtc_news("news/dogecoin/")
+    get_newsbtc_news("news/ripple/")
+    get_newsbtc_news("news/defi/")
+    get_newsbtc_news("nft/")
+    get_newsbtc_news("analysis/btc/")
+    get_newsbtc_news("analysis/eth/")
+    get_newsbtc_news("analysis/ada/")
+    get_newsbtc_news("analysis/link/")
+    get_newsbtc_news("analysis/ltc/")
+    get_newsbtc_news("analysis/xtz/")
+    get_newsbtc_news("analysis/zec/")
+    get_newsbtc_news("analysis/eos-price/")
+    get_newsbtc_news("news/yearnfinance/")
 
     """
     get_thenewscrypto_news("altcoin-news")
