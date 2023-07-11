@@ -12,7 +12,22 @@ import requests
 import re
 from bs4 import BeautifulSoup
 
+from logs.logger import logger
 from news.New import New
+
+
+def save_new_in_database(new: New):
+    """
+    This function save a new in the database
+    :param new: new object to save in the database
+    :return:
+    """
+    # Se hace un post a la api para guardar la noticia
+    url = "http://localhost:5000/save_new"
+    try:
+        requests.post(url, json=new.to_json())
+    except requests.exceptions.ConnectionError:
+        logger.error("Error connecting to the API")
 
 
 def get_coin_telegraph_news(tag):
@@ -39,7 +54,6 @@ def get_coin_telegraph_news(tag):
         try:
             # get image url on img class "lazy-image__img"
             image_url = new.find("img", class_="lazy-image__img")["src"]  # TODO: FIX THIS, IMAGE URL NEVER EXISTS
-            print(image_url)
         except TypeError:
             image_url = "No image"
         # get summary on p class "post-card-inline__text"
@@ -67,10 +81,8 @@ def get_coin_telegraph_news(tag):
 
         # Create news object
         n = New(title, url, image_url, summary, category, date=None)
-        # Print news
-        print(n.__str__())
-        print("--------------------------------------------------")
-        # TODO: Save news in database
+        # Save news in database
+        save_new_in_database(n)
 
 
 def get_coinpedia_news():
@@ -110,10 +122,8 @@ def get_coinpedia_news():
         date = new.find("span", class_="date meta-item tie-icon").text
         # Create news object
         n = New(title, url, image_url, summary, category, date)
-        # Print news
-        print(n.__str__())
-        print("------------------------------------")
-        # TODO: Save news in database
+        # Save news in database
+        save_new_in_database(n)
 
 
 def get_ambcrypto_news():
@@ -145,9 +155,8 @@ def get_ambcrypto_news():
         category = new.find("a", class_="mvp-cd-cat left relative").text
         # Create news object
         n = New(title, url, image_url, summary=None, date=None, category=category)
-        # Print news
-        print(n.__str__())
-        print("------------------------------------")
+        # Save news in database
+        save_new_in_database(n)
 
 
 def get_cryptopolitan_news(url):
@@ -198,10 +207,8 @@ def get_cryptopolitan_news(url):
             date = None
         if url is not None and title is not None:
             n = New(title, url, image_url, summary, category, date)
-            # Print news
-            print(n.__str__())
-            print("------------------------------------")
-            # TODO: Save news in database
+            # Save news in database
+            save_new_in_database(n)
 
 
 def get_thenewscrypto_news(tag):
@@ -234,10 +241,8 @@ def get_thenewscrypto_news(tag):
 
         # create news object
         n = New(title, url, image_url, summary, category, date=None)
-        # Print news
-        print(n.__str__())
-        print("------------------------------------")
-        # TODO: Save news in database
+        # Save news in database
+        save_new_in_database(n)
 
 
 def get_newsbtc_news(tag):
@@ -274,10 +279,8 @@ def get_newsbtc_news(tag):
         category = category.title()
         # create news object
         n = New(title, url, image_url, summary, category, date=None)
-        # Print news
-        print(n.__str__())
-        print("------------------------------------")
-        # TODO: Save news in database
+        # Save news in database
+        save_new_in_database(n)
 
 
 def get_thecryptobasic_news(tag):
@@ -320,13 +323,12 @@ def get_thecryptobasic_news(tag):
 
         # create news object
         n = New(title, url, image_url, summary, category, date)
-        # Print news
-        print(n.__str__())
-        print("------------------------------------")
-        # TODO: Save news in database
+        # Save news in database
+        save_new_in_database(n)
 
 
 if __name__ == '__main__':
+
     get_thecryptobasic_news("category/latest-crypto-news/")
     get_thecryptobasic_news("tag/bitcoin/")
     get_thecryptobasic_news("tag/ethereum/")
@@ -338,7 +340,6 @@ if __name__ == '__main__':
     get_thecryptobasic_news("category/cryptocurrency-trading-bot/")
     get_thecryptobasic_news("category/cryptocurrency-guides/")
     get_thecryptobasic_news("category/cryptocurrency-exchanges/")
-
 
     get_newsbtc_news("news/")
     get_newsbtc_news("news/bitcoin/")
@@ -358,7 +359,6 @@ if __name__ == '__main__':
     get_newsbtc_news("analysis/eos-price/")
     get_newsbtc_news("news/yearnfinance/")
 
-    
     get_thenewscrypto_news("altcoin-news")
     get_thenewscrypto_news("bitcoin-news")
     get_thenewscrypto_news("news/ethereum-news/")
@@ -370,7 +370,7 @@ if __name__ == '__main__':
     get_thenewscrypto_news("markets/price-analysis/")
     get_thenewscrypto_news("markets/price-prediction/")
     get_thenewscrypto_news("learn/")
-    
+
     get_cryptopolitan_news("https://www.cryptopolitan.com/news/")
     get_cryptopolitan_news("https://www.cryptopolitan.com/price-prediction/")
     get_cryptopolitan_news("https://www.cryptopolitan.com/guides/")
@@ -378,11 +378,11 @@ if __name__ == '__main__':
     get_cryptopolitan_news("https://www.cryptopolitan.com/news/research/")
     get_cryptopolitan_news("https://www.cryptopolitan.com/news/scam/")
     get_cryptopolitan_news("https://www.cryptopolitan.com/technology/")
-    
+
     get_ambcrypto_news()
-    
+
     get_coinpedia_news()
-    
+
     get_coin_telegraph_news("bitcoin")
     get_coin_telegraph_news("ethereum")
     get_coin_telegraph_news("altcoin")
@@ -392,4 +392,3 @@ if __name__ == '__main__':
     get_coin_telegraph_news("nft")
     get_coin_telegraph_news("defi")
     get_coin_telegraph_news("adoption")
-
