@@ -22,7 +22,7 @@ def save_new_in_database(new: New):
     :param new: new object to save in the database
     :return:
     """
-    # Se hace un post a la api para guardar la noticia
+
     url = "http://localhost:5000/save_new"
     try:
         requests.post(url, json=new.to_json())
@@ -176,7 +176,7 @@ def get_cryptopolitan_news(url):
         # get image on img class "grid-image ls-is-cached lazyloaded"
         try:
             image_url = new.find("img")["data-src"]
-        except TypeError:
+        except Exception:
             image_url = None
         # get url on a class "grid-image-holder"
         try:
@@ -319,6 +319,8 @@ def get_thecryptobasic_news(tag):
         category = re.sub(r"Category", "", category)
         # eliminar los espacios del principio y final de la categoria
         category = re.sub(r"^\s", "", category)
+        # eliminar el espacio del final de la categoria
+        category = re.sub(r"\s$", "", category)
         category = category.title()
 
         # create news object
@@ -327,7 +329,44 @@ def get_thecryptobasic_news(tag):
         save_new_in_database(n)
 
 
+def get_livebitcoinnews_news(tag):
+    url = f"https://www.livebitcoinnews.com/{tag}"
+    response = requests.get(url, headers={'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; rv:110.0) '
+                                                        'Gecko/20100101 Firefox/110.0',
+                                          'Accept': 'text/html,application/xhtml+xml,application/'
+                                                    'xml;q=0.9,image/avif,image/webp,*/*;q=0.8'})
+    soup = BeautifulSoup(response.text, "html.parser")
+    # News are into div class "jeg_posts jeg_load_more_flag" in article class "jeg_post jeg_pl_lg_2 format-standard"
+    news = soup.find_all("div", class_="jeg_posts jeg_load_more_flag")
+    # divide news in article
+    try:
+        news = news[0].find_all("article")
+    except IndexError:
+        news = []
+    for new in news:
+        image_url = new.find("img")["data-src"]
+        url = new.find("a")["href"]
+        # title on h3 class "jeg_post_title"
+        title = new.find("h3", class_="jeg_post_title").find("a").text
+        # no summary
+        summary = None
+        # get date on span class "jeg_meta_date"
+        date = new.find("div", class_="jeg_meta_date").text
+        # remove the first space
+        date = re.sub(r"^\s", "", date)
+        # get category from class "jeg_meta_category"
+        category = new.find("div", class_="jeg_post_category").find("a").text
+        # create news object
+        n = New(title, url, image_url, summary, category, date)
+        # Save news in database
+        save_new_in_database(n)
+
+
 if __name__ == '__main__':
+    get_livebitcoinnews_news("news/bitcoin-news/")
+    get_livebitcoinnews_news("news/altcoin-news/")
+    get_livebitcoinnews_news("news/exchange-news/")
+    get_livebitcoinnews_news("news/dogecoin-news/")
 
     get_thecryptobasic_news("category/latest-crypto-news/")
     get_thecryptobasic_news("tag/bitcoin/")
