@@ -1,7 +1,7 @@
 """
 This file is the main file of the API, here we will define the endpoints and the logic of the API
 """
-
+import re
 import sqlite3
 
 from flask import Flask, request, json
@@ -67,6 +67,7 @@ def news():
 
 
 @app.route('/save_new', methods=['POST'])
+@limiter.exempt
 def save_new():
     """
     This endpoint will save a new in the database
@@ -76,6 +77,12 @@ def save_new():
     if request.method == 'POST':  # Si el método es POST se añade la noticia a la base de datos
         new = request.get_json()
         try:
+            # Expresion regular para eliminar los espacios al princio y al final de cada dato
+            new['Title'] = re.sub(r"^\s+|\s+$", "", new['Title'])
+            new['Category'] = re.sub(r"^\s+|\s+$", "", new['Category'])
+            new['Summary'] = re.sub(r"^\s+|\s+$", "", new['Summary'])
+            new['Date'] = re.sub(r"^\s+|\s+$", "", new['Date'])
+
             conn.execute('INSERT OR IGNORE INTO NEWS '
                          '(ID, Title, Url, Image_url, Summary, Category, Date) '
                          'VALUES (?,?,?,?,?,?,?)',
